@@ -1,0 +1,1654 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+### train CSV
+
+```{r}
+train_hb <- read.csv("hotel_bookings_train.csv", header = T, sep = ",")[,-c(1)]
+str(train_hb)
+```
+```{r}
+train_hb <- na.omit(train_hb)
+table(train_hb$hotel)
+```
+```{r}
+train_hb$hotel[train_hb$hotel == "City Hotel"] <- 1
+train_hb$hotel[train_hb$hotel == "Resort Hotel"] <- 2
+table(train_hb$hotel)
+```
+```{r}
+train_hb$hotel <- as.numeric(train_hb$hotel)
+train_hb$arrival_date_month <-  factor(train_hb$arrival_date_month, levels = month.name)
+table(train_hb$arrival_date_month)
+```
+
+```{r}
+train_hb$arrival_date_month <- as.numeric(train_hb$arrival_date_month)
+table(train_hb$arrival_date_month)
+```
+
+```{r}
+table(train_hb$meal)
+```
+
+```{r}
+train_hb$meal[train_hb$meal == "BB"] <- 1
+train_hb$meal[train_hb$meal == "FB"] <- 2
+train_hb$meal[train_hb$meal == "HB"] <- 3
+train_hb$meal[train_hb$meal == "SC"] <- 4
+train_hb$meal[train_hb$meal == "Undefined"] <- 5
+table(train_hb$meal)
+train_hb$meal <- as.numeric(train_hb$meal)
+```
+
+```{r}
+table(train_hb$market_segment)
+```
+
+```{r}
+train_hb$market_segment[train_hb$market_segment == "Aviation"] <- 1
+train_hb$market_segment[train_hb$market_segment == "Complementary"] <- 2
+train_hb$market_segment[train_hb$market_segment == "Corporate"] <- 3
+train_hb$market_segment[train_hb$market_segment == "Direct"] <- 4
+train_hb$market_segment[train_hb$market_segment == "Groups"] <- 5
+train_hb$market_segment[train_hb$market_segment == "Offline TA/TO"] <- 6
+train_hb$market_segment[train_hb$market_segment == "Online TA"] <- 7
+table(train_hb$market_segment)
+train_hb$market_segment <- as.numeric(train_hb$market_segment)
+```
+
+```{r}
+table(train_hb$distribution_channel)
+```
+```{r}
+train_hb$distribution_channel[train_hb$distribution_channel == "Corporate"] <- 1
+train_hb$distribution_channel[train_hb$distribution_channel == "Direct"] <- 2
+train_hb$distribution_channel[train_hb$distribution_channel == "GDS"] <- 3
+train_hb$distribution_channel[train_hb$distribution_channel == "TA/TO"] <- 4
+train_hb$distribution_channel[train_hb$distribution_channel == "Undefined"] <- 5
+table(train_hb$distribution_channel)
+train_hb$distribution_channel <- as.numeric(train_hb$distribution_channel)
+```
+
+```{r}
+table(train_hb$is_repeated_guest)
+train_hb$is_repeated_guest <- as.numeric(train_hb$is_repeated_guest)
+table(train_hb$is_repeated_guest)
+```
+
+```{r}
+table(train_hb$deposit_type)
+```
+
+
+```{r}
+train_hb$deposit_type[train_hb$deposit_type == "No Deposit"] <- 1
+train_hb$deposit_type[train_hb$deposit_type == "Non Refund"] <- 2
+train_hb$deposit_type[train_hb$deposit_type == "Refundable"] <- 3
+table(train_hb$deposit_type)
+train_hb$deposit_type <- as.numeric(train_hb$deposit_type)
+```
+
+```{r}
+table(train_hb$customer_type)
+```
+
+
+```{r}
+train_hb$customer_type[train_hb$customer_type == "Contract"] <- 1
+train_hb$customer_type[train_hb$customer_type == "Group"] <- 2
+train_hb$customer_type[train_hb$customer_type == "Transient"] <- 3
+train_hb$customer_type[train_hb$customer_type == "Transient-Party"] <- 4
+table(train_hb$customer_type)
+train_hb$customer_type <- as.numeric(train_hb$customer_type)
+```
+
+```{r}
+str(train_hb)
+```
+
+### Validation CSV
+
+```{r}
+valid_hb <- read.csv("hotel_bookings_validation.csv", header = T, sep = ",")[,-c(1,15,21,22,25,26,32)]
+str(valid_hb)
+```
+
+
+```{r}
+valid_hb <- na.omit(valid_hb)
+table(valid_hb$hotel)
+```
+```{r}
+valid_hb$hotel[valid_hb$hotel == "City Hotel"] <- 1
+valid_hb$hotel[valid_hb$hotel == "Resort Hotel"] <- 2
+table(valid_hb$hotel)
+```
+```{r}
+valid_hb$hotel <- as.numeric(valid_hb$hotel)
+valid_hb$arrival_date_month <-  factor(valid_hb$arrival_date_month, levels = month.name)
+table(valid_hb$arrival_date_month)
+```
+
+```{r}
+valid_hb$arrival_date_month <- as.numeric(valid_hb$arrival_date_month)
+table(valid_hb$arrival_date_month)
+```
+
+```{r}
+table(valid_hb$meal)
+```
+
+```{r}
+valid_hb$meal[valid_hb$meal == "BB"] <- 1
+valid_hb$meal[valid_hb$meal == "FB"] <- 2
+valid_hb$meal[valid_hb$meal == "HB"] <- 3
+valid_hb$meal[valid_hb$meal == "SC"] <- 4
+valid_hb$meal[valid_hb$meal == "Undefined"] <- 5
+table(valid_hb$meal)
+valid_hb$meal <- as.numeric(valid_hb$meal)
+```
+
+```{r}
+table(valid_hb$market_segment)
+```
+
+```{r}
+valid_hb$market_segment[valid_hb$market_segment == "Aviation"] <- 1
+valid_hb$market_segment[valid_hb$market_segment == "Complementary"] <- 2
+valid_hb$market_segment[valid_hb$market_segment == "Corporate"] <- 3
+valid_hb$market_segment[valid_hb$market_segment == "Direct"] <- 4
+valid_hb$market_segment[valid_hb$market_segment == "Groups"] <- 5
+valid_hb$market_segment[valid_hb$market_segment == "Offline TA/TO"] <- 6
+valid_hb$market_segment[valid_hb$market_segment == "Online TA"] <- 7
+table(valid_hb$market_segment)
+valid_hb$market_segment <- as.numeric(valid_hb$market_segment)
+```
+
+```{r}
+table(valid_hb$distribution_channel)
+```
+```{r}
+valid_hb$distribution_channel[valid_hb$distribution_channel == "Corporate"] <- 1
+valid_hb$distribution_channel[valid_hb$distribution_channel == "Direct"] <- 2
+valid_hb$distribution_channel[valid_hb$distribution_channel == "GDS"] <- 3
+valid_hb$distribution_channel[valid_hb$distribution_channel == "TA/TO"] <- 4
+valid_hb$distribution_channel[valid_hb$distribution_channel == "Undefined"] <- 5
+table(valid_hb$distribution_channel)
+valid_hb$distribution_channel <- as.numeric(valid_hb$distribution_channel)
+```
+
+```{r}
+table(valid_hb$is_repeated_guest)
+valid_hb$is_repeated_guest <- as.numeric(valid_hb$is_repeated_guest)
+table(valid_hb$is_repeated_guest)
+```
+
+```{r}
+table(valid_hb$deposit_type)
+```
+
+
+```{r}
+valid_hb$deposit_type[valid_hb$deposit_type == "No Deposit"] <- 1
+valid_hb$deposit_type[valid_hb$deposit_type == "Non Refund"] <- 2
+valid_hb$deposit_type[valid_hb$deposit_type == "Refundable"] <- 3
+table(valid_hb$deposit_type)
+valid_hb$deposit_type <- as.numeric(valid_hb$deposit_type)
+```
+
+```{r}
+table(valid_hb$customer_type)
+```
+
+
+```{r}
+valid_hb$customer_type[valid_hb$customer_type == "Contract"] <- 1
+valid_hb$customer_type[valid_hb$customer_type == "Group"] <- 2
+valid_hb$customer_type[valid_hb$customer_type == "Transient"] <- 3
+valid_hb$customer_type[valid_hb$customer_type == "Transient-Party"] <- 4
+table(valid_hb$customer_type)
+valid_hb$customer_type <- as.numeric(valid_hb$customer_type)
+```
+
+```{r}
+str(valid_hb)
+```
+
+
+### Test CSV
+
+```{r}
+initial_test_hb <- read.csv("hotel_bookings_test.csv", header = T, sep = ",")[,-c(3)]
+str(initial_test_hb)
+```
+```{r}
+test_hb <- subset(initial_test_hb[,-c(1,14,20,21,24,25,31,32)])
+```
+
+
+```{r}
+test_hb <- na.omit(test_hb)
+table(test_hb$hotel)
+```
+```{r}
+test_hb$hotel[test_hb$hotel == "City Hotel"] <- 1
+test_hb$hotel[test_hb$hotel == "Resort Hotel"] <- 2
+table(test_hb$hotel)
+```
+```{r}
+test_hb$hotel <- as.numeric(test_hb$hotel)
+test_hb$arrival_date_month <-  factor(test_hb$arrival_date_month, levels = month.name)
+table(test_hb$arrival_date_month)
+```
+
+```{r}
+test_hb$arrival_date_month <- as.numeric(test_hb$arrival_date_month)
+table(test_hb$arrival_date_month)
+```
+
+```{r}
+table(test_hb$meal)
+```
+
+```{r}
+test_hb$meal[test_hb$meal == "BB"] <- 1
+test_hb$meal[test_hb$meal == "FB"] <- 2
+test_hb$meal[test_hb$meal == "HB"] <- 3
+test_hb$meal[test_hb$meal == "SC"] <- 4
+test_hb$meal[test_hb$meal == "Undefined"] <- 5
+table(test_hb$meal)
+test_hb$meal <- as.numeric(test_hb$meal)
+```
+
+```{r}
+table(test_hb$market_segment)
+```
+
+```{r}
+test_hb$market_segment[test_hb$market_segment == "Aviation"] <- 1
+test_hb$market_segment[test_hb$market_segment == "Complementary"] <- 2
+test_hb$market_segment[test_hb$market_segment == "Corporate"] <- 3
+test_hb$market_segment[test_hb$market_segment == "Direct"] <- 4
+test_hb$market_segment[test_hb$market_segment == "Groups"] <- 5
+test_hb$market_segment[test_hb$market_segment == "Offline TA/TO"] <- 6
+test_hb$market_segment[test_hb$market_segment == "Online TA"] <- 7
+table(test_hb$market_segment)
+test_hb$market_segment <- as.numeric(test_hb$market_segment)
+```
+
+```{r}
+table(test_hb$distribution_channel)
+```
+```{r}
+test_hb$distribution_channel[test_hb$distribution_channel == "Corporate"] <- 1
+test_hb$distribution_channel[test_hb$distribution_channel == "Direct"] <- 2
+test_hb$distribution_channel[test_hb$distribution_channel == "GDS"] <- 3
+test_hb$distribution_channel[test_hb$distribution_channel == "TA/TO"] <- 4
+test_hb$distribution_channel[test_hb$distribution_channel == "Undefined"] <- 5
+table(test_hb$distribution_channel)
+test_hb$distribution_channel <- as.numeric(test_hb$distribution_channel)
+```
+
+```{r}
+table(test_hb$is_repeated_guest)
+test_hb$is_repeated_guest <- as.numeric(test_hb$is_repeated_guest)
+table(test_hb$is_repeated_guest)
+```
+
+```{r}
+table(test_hb$deposit_type)
+```
+
+
+```{r}
+test_hb$deposit_type[test_hb$deposit_type == "No Deposit"] <- 1
+test_hb$deposit_type[test_hb$deposit_type == "Non Refund"] <- 2
+test_hb$deposit_type[test_hb$deposit_type == "Refundable"] <- 3
+table(test_hb$deposit_type)
+test_hb$deposit_type <- as.numeric(test_hb$deposit_type)
+```
+
+```{r}
+table(test_hb$customer_type)
+```
+
+
+```{r}
+test_hb$customer_type[test_hb$customer_type == "Contract"] <- 1
+test_hb$customer_type[test_hb$customer_type == "Group"] <- 2
+test_hb$customer_type[test_hb$customer_type == "Transient"] <- 3
+test_hb$customer_type[test_hb$customer_type == "Transient-Party"] <- 4
+table(test_hb$customer_type)
+test_hb$customer_type <- as.numeric(test_hb$customer_type)
+```
+
+```{r}
+str(test_hb)
+```
+
+
+
+# Modeling
+
+## NN
+
+```{r}
+library(neuralnet)
+library(visdat)
+library(caTools)
+```
+
+```{r}
+library(dplyr)
+train_hb2 = sample_n(train_hb, 5000)
+```
+
+
+```{r}
+
+y_train_hb2 = as.numeric(train_hb2[,2])
+x_train_hb2 = as.numeric(as.matrix(train_hb2[,-c(2,14,20,21,24,25,31)]))
+x_train_hb2 = matrix(as.numeric(x_train_hb2),ncol=24)
+#
+# y_test = as.numeric(XX_te[,11])
+# x_test = as.numeric(as.matrix(XX_test[,2:10]))
+# x_test = matrix(as.numeric(x_test),ncol=9)
+#
+df_train = data.frame(cbind(x_train_hb2,y_train_hb2))
+#df_test = data.frame(cbind(x_test,y_test))
+```
+
+```{r}
+# NN - first model: one hidden layer with 5 neurons
+# 
+set.seed(100)
+nn1 = neuralnet(y_train_hb2~V1+V2+V3+V4+V5+V6+V7+V8+V9+V10+V11+V12+V13+
+                  V14+V15+V16+V17+V18+V19+V20+V21+V22+V23+V24,
+                data = df_train, hidden = 3, linear.output = F, rep = 5, stepmax=1e7)
+summary(nn1)
+# show the results
+head(nn1$result.matrix)
+```
+```{r}
+# see the errors in each replicate
+nn1$result.matrix[1,]
+# select the replicate which has attained the smallest error
+imin_rep=which.min(nn1$result.matrix[1,])
+imin_rep
+
+# compute the predicted values
+
+yhat = round(nn1$net.result[[imin_rep]])
+head(yhat)
+# compute the Confusion Matrix and the accuracy
+ConfMat1_train=addmargins(table(y_train_hb2,yhat))
+ConfMat1_train
+accuracy1_train=(ConfMat1_train[1,1]+ConfMat1_train[2,2])/(nrow(train_hb))
+accuracy1_train
+#
+
+```
+
+
+```{r}
+y_valid_hb = as.numeric(valid_hb[,2])
+x_valid_hb = as.numeric(as.matrix(valid_hb[,c(1,3:25)]))
+x_valid_hb = matrix(as.numeric(x_valid_hb),ncol=24)
+
+df_valid = data.frame(cbind(x_valid_hb,y_valid_hb))
+
+#df_valid = data.frame(cbind(x_valid_hb))
+
+```
+
+
+```{r}
+# predicting Class using the neural network
+ pr.nn1 <- predict(nn1,df_valid, rep=imin_rep)
+ head(pr.nn1)
+ yhat_test = round(pr.nn1)
+ head(yhat_test)
+ # compute the Confusion Matrix and the accuracy
+ ConfMat1_test=addmargins(table(y_valid_hb,yhat_test))
+ ConfMat1_test
+ accuracy1_test=(ConfMat1_test[1,1]+ConfMat1_test[2,2])/nrow(df_valid)
+ accuracy1_test
+ accuracy1_train
+```
+
+```{r}
+library("writexl")
+df_valid$pred_class <- yhat_test
+write_xlsx(df_valid,"C:\\Users\\HP 14\\Desktop\\UNICT\\2nd Semester\\prediction-validation.xlsx")
+```
+
+
+
+    
+## logistic regression
+
+```{r}
+nL<-dim(train_hb)[1]
+nL
+
+nT<-dim(valid_hb)[1]
+nT
+
+
+glm.fit2_L=glm(is_canceled~hotel+lead_time+arrival_date_year+
+              arrival_date_month+stays_in_weekend_nights+arrival_date_day_of_month+
+              stays_in_week_nights+arrival_date_week_number+adults+children+
+              babies+meal+market_segment+distribution_channel+is_repeated_guest+
+              previous_cancellations+previous_bookings_not_canceled+
+              booking_changes+deposit_type+days_in_waiting_list+customer_type+
+              adr+total_of_special_requests+required_car_parking_spaces,
+              data=train_hb, family=binomial)
+summary(glm.fit2_L, digits=3)
+glm.probs2_L=predict.glm(glm.fit2_L,type="response")
+glm.pred2_L=rep("No",nL)
+glm.pred2_L[glm.probs2_L>.5]="Yes" # assign "Up" for units with P(Y="Up")>0.5
+table(glm.pred2_L,train_hb$is_canceled) # confusion matrix
+confMat2_L<-addmargins(table(glm.pred2_L,train_hb$is_canceled))
+confMat2_L
+delta2_L=(confMat2_L[1,2]+confMat2_L[2,1])/nL*100
+delta2_L
+```
+
+
+
+```{r}
+# compute the model on the test set
+glm.probs2_T=predict.glm(glm.fit2_L, newdata=valid_hb, type="response") # note the option newdata
+glm.pred2_T=rep("No",nT)
+glm.pred2_T[glm.probs2_T>.5]="Yes" # assign "Up" for units with P(Y="Up")>0.5
+table(glm.pred2_T,valid_hb$is_canceled) # confusion matrix
+confMat2_T<-addmargins(table(glm.pred2_T,valid_hb$is_canceled))
+confMat2_T
+delta2_T=(confMat2_T[1,2]+confMat2_T[2,1])/nT*100
+delta2_T
+```
+
+## Random Forest
+
+
+```{r}
+# BAGGING AND RANDOM FOREST
+#
+# We apply bagging and random forests to the Boston data, using the
+# randomForest package in R.
+#
+# Note that the exact results obtained here may depend on the version of R 
+# and the version of the randomForest package installed on your computer. 
+#
+# Recall that bagging is simply a special case of a random forest with m = p. 
+# Therefore, the randomForest() function can random be used to perform 
+# both random forests and bagging.
+ install.packages("randomForest")
+#
+library(randomForest)
+set.seed(1)
+bag.boston=randomForest(medv~.,data=Boston,subset=train,mtry=13,importance=TRUE)
+bag.boston
+# The argument mtry=13 indicates that all 13 predictors should be considered
+# for each split of the trees in other words, that bagging should be done.
+# 
+# Run this bagged model on the test set
+yhat.bag = predict(bag.boston,newdata=Boston[-train,])
+boston.test=Boston[-train,"medv"]
+plot(yhat.bag, boston.test, pch=20, col="red", cex=0.8)
+abline(0,1)
+test_set.MSE_bag=mean((yhat.bag-boston.test)^2)
+test_set.MSE_bag
+sqrt(test_set.MSE_bag)
+# The test set MSE associated with the bagged regression tree is 
+# test_set.MSE(value), smaller than the value obtained using an 
+# optimally-pruned single tree.
+# 
+# We could change the number of trees grown by randomForest() using the ntree argument
+# (default value: ntree=500):
+
+```
+
+```{r}
+library(randomForest)
+set.seed(1)
+bag.boston=randomForest(is_canceled~hotel+lead_time+arrival_date_year+
+              arrival_date_month+stays_in_weekend_nights+arrival_date_day_of_month+
+              stays_in_week_nights+arrival_date_week_number+adults+children+
+              babies+meal+market_segment+distribution_channel+is_repeated_guest+
+              previous_cancellations+previous_bookings_not_canceled+
+              booking_changes+deposit_type+days_in_waiting_list+customer_type+
+              adr+total_of_special_requests+required_car_parking_spaces,
+              data=train_hb, mtry=24, ntree=10)
+bag.boston
+```
+
+```{r}
+yhat.bag = predict(bag.boston,newdata=valid_hb)
+
+test_set.MSE_bag2=mean((yhat.bag-as.matrix(valid_hb[2]))^2)
+test_set.MSE_bag2
+sqrt(test_set.MSE_bag2)
+```
+
+```{r}
+yhat_test = round(yhat.bag)
+ head(yhat_test)
+ # compute the Confusion Matrix and the accuracy
+ ConfMat1_test=addmargins(table(y_valid_hb,yhat_test))
+ ConfMat1_test
+ accuracy1_test=(ConfMat1_test[1,1]+ConfMat1_test[2,2])/nrow(valid_hb)
+ accuracy1_test
+```
+
+
+# We get essentially the same value as before
+#
+# Growing a random forest proceeds in exactly the same way, except that
+# we use a smaller value of the mtry argument. By default, randomForest()
+# uses p/3 variables when building a random forest of regression trees, and
+# sqrt{p} variables when building a random forest of classification trees. Here we
+# use mtry = 6.
+#
+# importance is a logical value to assess the importance of the variables
+#
+set.seed(1)
+rf.boston=randomForest(medv~.,data=Boston,subset=train,mtry=6,importance=TRUE)
+yhat.rf = predict(rf.boston,newdata=Boston[-train,])
+test_set.MSE_rf=mean((yhat.rf-boston.test)^2)
+test_set.MSE_rf
+sqrt(test_set.MSE_rf)
+sqrt(test_set.MSE_bag)
+sqrt(test_set.MSE_bag2)
+# random forests yielded an improvement over bagging in this case.
+#
+# Using the importance() function, we can view the importance of each variable.
+importance(rf.boston)
+# Two measures of variable importance are reported. 
+#
+# %IncMSE is based upon the mean decrease of accuracy in predictions 
+# on the out of bag samples when a given variable is excluded from the model. 
+#
+# IncNodePurity is a measure of the total decrease in node impurity 
+# that results from splits over that variable, averaged over all trees. 
+#
+# In the case of regression trees, the node impurity is measured by the training RSS, 
+# and for classification trees by the deviance.
+varImpPlot(rf.boston, col="blue", main="Boston data")
+# The results indicate that across all of the trees considered in the random forest, 
+# the wealth level of the community (lstat) and the house size (rm) are by far 
+# the two most important variables.
+#
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
